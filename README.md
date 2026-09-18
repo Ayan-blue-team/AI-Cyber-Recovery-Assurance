@@ -1,235 +1,150 @@
 <div align="center">
 
-🛡️ AI Cyber Recovery Assurance
+AI Cyber Recovery Assurance
 
-AI-Assisted Incident Recovery · Independent Security Verification · Controlled Re-Attack
+AI-Assisted Incident Recovery with Independent Security Verification and Controlled Re-Attack Validation
 
-<p>
-  <img src="https://img.shields.io/badge/Status-Under%20Development-orange?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Python-3.x-blue?style=for-the-badge&logo=python&logoColor=white">
-  <img src="https://img.shields.io/badge/Wazuh-SIEM%20%2F%20XDR-00AEEF?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Platform-VMware-607078?style=for-the-badge&logo=vmware&logoColor=white">
-</p>
-<p>
-  <img src="https://img.shields.io/badge/AI-Cybersecurity-purple?style=flat-square">
-  <img src="https://img.shields.io/badge/SOC-Incident%20Response-red?style=flat-square">
-  <img src="https://img.shields.io/badge/Security-Assurance-green?style=flat-square">
-  <img src="https://img.shields.io/badge/Attack-Validation-darkred?style=flat-square">
-</p>
+<br>
 <br>
 
-AI-generated recovery is not considered successful until the recovered environment passes independent security verification and survives controlled re-attack.
+Recovery is not considered successful until the recovered environment passes independent security verification and survives controlled re-attack.
 
 </div>
 
 ⸻
 
-🧠 What is this?
+Overview
 
-AI Cyber Recovery Assurance is a cybersecurity research and engineering project designed to investigate a simple but important question:
+AI Cyber Recovery Assurance is a cybersecurity research and engineering project investigating how AI-assisted incident recovery can be independently verified.
 
-After an AI-assisted recovery process says an incident is resolved, how can we prove that the environment is actually secure again?
+Modern security operations increasingly use AI to investigate alerts, correlate evidence, identify probable root causes, and recommend response actions. However, generating a recovery plan does not inherently demonstrate that the compromised environment has returned to a secure state.
 
-Instead of ending the incident-response lifecycle after restoring a system, this project introduces an additional verification loop.
+This project introduces an additional assurance layer between recovery and incident closure.
 
-        ATTACK
-          │
-          ▼
-      DETECTION
-          │
-          ▼
-    INVESTIGATION
-          │
-          ▼
-   AI RECOVERY PLAN
-          │
-          ▼
-   RECOVERY EXECUTION
-          │
-          ▼
- ┌─────────────────────┐
- │ SECURITY ASSURANCE  │
- │                     │
- │ Security Invariants │
- └──────────┬──────────┘
-            │
-            ▼
-    CONTROLLED RE-ATTACK
-            │
-       ┌────┴────┐
-       ▼         ▼
-    BLOCKED    SUCCESS
-       │         │
-       ▼         ▼
-    PROVEN     FAILED
+The system:
 
-The key idea is simple:
+1. investigates the incident,
+2. generates a structured recovery plan,
+3. executes controlled recovery actions,
+4. evaluates predefined security invariants,
+5. reproduces relevant attack techniques in an isolated environment,
+6. determines whether the recovered state withstands re-validation.
 
-Recovery ≠ Proof of Recovery
+The project therefore treats recovery verification as an explicit security problem rather than assuming that successful remediation commands imply successful recovery.
 
 ⸻
 
-🎯 The Problem
+Research Problem
 
-Traditional incident response can be represented as:
+A conventional incident-response lifecycle can be simplified as:
 
-Detect → Respond → Restore → Close
+Detection → Investigation → Response → Recovery → Closure
 
-But an operationally restored system may still contain security weaknesses.
+The problem is that operational recovery and security recovery are not necessarily equivalent.
 
-For example:
+A system may be available again while:
 
-Recovery Situation	Possible Problem
-Account disabled	Another compromised account remains
-Malware deleted	Persistence mechanism survives
-Server restored	Original vulnerability remains
-Firewall restored	Malicious rule may still exist
-Security agent restarted	Telemetry may still be incomplete
-Password changed	Other credentials may remain compromised
+* compromised credentials remain valid,
+* persistence mechanisms remain active,
+* unauthorized accounts remain,
+* security controls remain degraded,
+* telemetry is incomplete,
+* the original exploitation path remains available.
 
-Therefore, this project separates:
+This project investigates whether recovery can be evaluated through an independently verifiable security state.
 
-Recovery Action
+Research Question
 
-from
-
-Recovery Verification
-
-and finally from
-
-Recovery Proof.
+Can an AI-assisted incident recovery workflow be independently verified through security invariants and controlled re-attack validation to determine whether a compromised environment has actually recovered securely?
 
 ⸻
 
-🔥 Core Concept
+System Model
 
-Recovery → Assurance → Re-Attack → Proof
-
-The system does not trust the recovery process blindly.
-
-Instead:
-
-AI
-│
-├── Investigates incident
-├── Identifies probable root cause
-└── Generates recovery plan
-             │
-             ▼
-     Recovery Orchestrator
-             │
-             ▼
-      Recovered System
-             │
-             ▼
-     Assurance Engine
-             │
-             ├── Identity checks
-             ├── Persistence checks
-             ├── Process checks
-             ├── Network checks
-             ├── Configuration checks
-             └── Telemetry checks
-             │
-             ▼
-      Controlled Re-Attack
-             │
-             ▼
-       Recovery Proof
-
-⸻
-
-🧩 System Architecture
-
-                         ┌───────────────────┐
-                         │    KALI LINUX     │
-                         │   Attack Engine   │
-                         └─────────┬─────────┘
-                                   │
-                                   │ Controlled TTP
-                                   ▼
-                    ┌──────────────────────────┐
-                    │      TARGET ENVIRONMENT  │
-                    │                          │
-                    │  Windows / Linux         │
-                    │  Sysmon / Auditd         │
-                    │  Defender / Firewall     │
-                    └────────────┬─────────────┘
-                                 │
-                                 │ Telemetry
-                                 ▼
-                    ┌──────────────────────────┐
-                    │       WAZUH SIEM/XDR     │
-                    │                          │
-                    │ Detection                │
-                    │ Correlation              │
-                    │ Alerting                 │
-                    └────────────┬─────────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────────┐
-                    │       AI SOC ENGINE      │
-                    │                          │
-                    │ Investigation            │
-                    │ Root Cause Analysis      │
-                    │ Recovery Planning        │
-                    └────────────┬─────────────┘
-                                 │
-                                 │ Structured Plan
-                                 ▼
-                    ┌──────────────────────────┐
-                    │    RECOVERY ORCHESTRATOR │
-                    │                          │
-                    │ Python / PowerShell      │
-                    │ Bash / Security APIs     │
-                    └────────────┬─────────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────────┐
-                    │    ASSURANCE ENGINE      │
-                    │                          │
-                    │ Security Invariants      │
-                    │ Evidence Validation      │
-                    │ System State Checks      │
-                    └────────────┬─────────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────────┐
-                    │   CONTROLLED RE-ATTACK   │
-                    │                          │
-                    │ Replay relevant TTPs     │
-                    └────────────┬─────────────┘
-                                 │
-                         ┌───────┴───────┐
-                         ▼               ▼
-                      BLOCKED          SUCCESS
-                         │               │
-                         ▼               ▼
-                    ┌─────────┐     ┌─────────┐
-                    │ PROVEN  │     │ FAILED  │
-                    └─────────┘     └─────────┘
+                         ┌───────────────────────┐
+                         │     ATTACK ENGINE      │
+                         │       Kali Linux       │
+                         └───────────┬───────────┘
+                                     │
+                              Controlled TTP
+                                     │
+                                     ▼
+                         ┌───────────────────────┐
+                         │   TARGET ENVIRONMENT  │
+                         │                       │
+                         │ Windows / Linux       │
+                         │ Sysmon / auditd       │
+                         │ Defender / Firewall   │
+                         └───────────┬───────────┘
+                                     │
+                                  Telemetry
+                                     │
+                                     ▼
+                         ┌───────────────────────┐
+                         │      WAZUH LAYER      │
+                         │                       │
+                         │ Collection            │
+                         │ Detection             │
+                         │ Correlation           │
+                         │ Alerting              │
+                         └───────────┬───────────┘
+                                     │
+                                     ▼
+                         ┌───────────────────────┐
+                         │    AI SOC ENGINE      │
+                         │                       │
+                         │ Investigation         │
+                         │ Root Cause Analysis   │
+                         │ Recovery Planning     │
+                         └───────────┬───────────┘
+                                     │
+                              Structured Plan
+                                     │
+                                     ▼
+                         ┌───────────────────────┐
+                         │ RECOVERY ORCHESTRATOR │
+                         │                       │
+                         │ Python                │
+                         │ PowerShell            │
+                         │ Bash / APIs           │
+                         └───────────┬───────────┘
+                                     │
+                               Recovery
+                                     │
+                                     ▼
+                         ┌───────────────────────┐
+                         │  ASSURANCE ENGINE     │
+                         │                       │
+                         │ Security Invariants   │
+                         │ State Verification    │
+                         │ Evidence Validation   │
+                         └───────────┬───────────┘
+                                     │
+                                     ▼
+                         ┌───────────────────────┐
+                         │ CONTROLLED RE-ATTACK  │
+                         │                       │
+                         │ Reproduce relevant   │
+                         │ attack techniques     │
+                         └───────────┬───────────┘
+                                     │
+                         ┌───────────┴───────────┐
+                         │                       │
+                      BLOCKED                 SUCCESS
+                         │                       │
+                         ▼                       ▼
+                    RECOVERY                  RECOVERY
+                     PROVEN                    FAILED
 
 ⸻
 
-🧠 AI SOC Engine
+Core Methodology
 
-The AI layer is divided into three major components:
+The system is built around four stages:
 
-🔎 Investigation Engine
+01 — Recovery
 
-Responsible for:
-
-* alert analysis
-* event correlation
-* attack timeline generation
-* root-cause analysis
-* incident summarization
-
-🧩 Recovery Planner
-
-Converts investigation results into structured recovery actions.
-
-Example:
+The AI analyzes the incident and generates a structured recovery plan.
 
 {
   "action": "disable_account",
@@ -238,44 +153,26 @@ Example:
   "risk": "medium"
 }
 
-🤖 AI Safety Boundary
+The AI does not directly execute unrestricted privileged commands.
 
-The AI does not receive unrestricted administrative access.
+All actions pass through the recovery orchestration layer.
 
-Instead:
+02 — Assurance
 
-AI Recommendation
-       ↓
-Validation
-       ↓
-Authorization
-       ↓
-Execution
+After recovery, an independent verification engine evaluates whether required security conditions are satisfied.
 
-This creates a controlled boundary between AI reasoning and privileged operations.
+Examples include:
 
-⸻
-
-🛡️ Security Assurance Engine
-
-This is one of the central components of the project.
-
-The Assurance Engine evaluates whether predefined security invariants are satisfied after recovery.
-
-Examples:
-
-✓ Compromised account disabled
-✓ Credentials rotated
-✓ Malicious process removed
-✓ Persistence removed
-✓ Scheduled task removed
-✓ Unauthorized admin removed
-✓ Firewall restored
-✓ Security agent running
-✓ Telemetry healthy
-✓ Vulnerability remediated
-✓ Malicious connection removed
-✓ Backup integrity verified
+* compromised account disabled
+* credentials rotated
+* malicious process removed
+* persistence removed
+* unauthorized administrative access removed
+* firewall configuration restored
+* endpoint security agent active
+* telemetry restored
+* exploited vulnerability remediated
+* malicious network connection removed
 
 Each invariant produces:
 
@@ -283,117 +180,148 @@ PASS
 FAIL
 UNKNOWN
 
-Example:
+03 — Re-Validation
 
-╔══════════════════════════════════════╗
-║       SECURITY ASSURANCE CHECK       ║
-╠══════════════════════════════════════╣
-║ Account Status              PASS     ║
-║ Persistence                PASS     ║
-║ Malicious Process           PASS     ║
-║ Firewall                   PASS     ║
-║ Telemetry                  PASS     ║
-║ Vulnerability              FAIL     ║
-╚══════════════════════════════════════╝
+The system safely reproduces relevant portions of the original attack inside the isolated laboratory.
 
-⸻
+The purpose is not to generate damage.
 
-⚔️ Controlled Re-Attack
+The purpose is to answer:
 
-Passing security checks alone is not enough.
+Can the same security failure still be reproduced after recovery?
 
-The system also asks:
+04 — Recovery Proof
 
-Can the original attack still succeed?
+The final recovery state combines invariant verification and controlled re-attack results.
 
-The re-attack engine safely reproduces relevant attack techniques inside the isolated laboratory.
+Possible outcomes:
 
-Original Attack
-       │
-       ▼
-Recovery
-       │
-       ▼
-Security Verification
-       │
-       ▼
-Reproduce Relevant TTP
-       │
-   ┌───┴────┐
-   ▼        ▼
-Blocked   Successful
-   │        │
-   ▼        ▼
- PROVEN    FAILED
+PROVEN
+PARTIALLY PROVEN
+FAILED
+UNKNOWN
 
-This creates an adversarial validation step after recovery.
+The exact decision logic will be defined and evaluated experimentally during implementation.
 
 ⸻
 
-🧪 Recovery Proof
+AI / Security Boundary
 
-A recovery operation is considered PROVEN only when the verification process supports that conclusion.
+A fundamental design principle is separation between AI reasoning and privileged execution.
 
-Example:
+┌────────────────────┐
+│    AI SOC ENGINE   │
+│                    │
+│ Investigation      │
+│ Root Cause         │
+│ Recovery Plan      │
+└─────────┬──────────┘
+          │
+          │ Structured Request
+          ▼
+┌────────────────────┐
+│ Recovery Policy    │
+│ & Validation Layer │
+└─────────┬──────────┘
+          │
+          │ Authorized Action
+          ▼
+┌────────────────────┐
+│ Recovery Executor  │
+│                    │
+│ PowerShell / Bash  │
+│ Python / APIs      │
+└────────────────────┘
 
-╭────────────────────────────────────────╮
-│         RECOVERY ASSURANCE REPORT       │
-├────────────────────────────────────────┤
-│ Incident:       INC-2026-001            │
-│ Attack:         Credential Compromise   │
-│                                        │
-│ Invariants:      47                     │
-│ Passed:          46                     │
-│ Failed:           1                     │
-│ Critical:         12 / 12               │
-│                                        │
-│ Persistence:      REMOVED               │
-│ Credentials:      ROTATED               │
-│ Telemetry:        HEALTHY               │
-│                                        │
-│ Re-Attack:        BLOCKED               │
-│                                        │
-│ STATUS:           PARTIALLY PROVEN      │
-╰────────────────────────────────────────╯
-
-The displayed values are examples for the future implementation, not current experimental results.
+This architecture prevents the language model from being treated as an unrestricted system administrator.
 
 ⸻
 
-📊 Planned Evaluation
+Security Invariants
 
-The project will experimentally evaluate:
+Security invariants represent conditions that should hold after recovery.
 
-Metric	Purpose
-Recovery Success Rate	How often recovery reaches the expected state
-Invariant Pass Rate	How many security conditions are satisfied
-Re-Attack Success Rate	Whether the attacker can regain access
-False Recovery Rate	Recovery reported successful but later fails validation
-Recovery Time	Time required to reach verified recovery
-Manual Intervention	Human actions required
-AI Recommendation Accuracy	Quality of generated recovery plans
+Example invariant categories:
+
+Category	Example
+Identity	Compromised account disabled
+Credentials	Compromised credentials rotated
+Persistence	Malicious persistence removed
+Process	Malicious process terminated
+Network	Unauthorized connection removed
+Firewall	Expected policy restored
+Endpoint	Security agent operational
+Telemetry	Required logs available
+Vulnerability	Exploited weakness remediated
+Backup	Recovery source verified
+
+The Assurance Engine will evaluate these conditions independently from the AI’s own conclusion.
+
+⸻
+
+Evaluation Framework
+
+The project will evaluate recovery using measurable security and operational metrics.
+
+Metric	Description
+Recovery Success Rate	Percentage of scenarios reaching verified recovery
+Invariant Pass Rate	Percentage of required invariants satisfied
+Re-Attack Success Rate	Percentage of scenarios where the original compromise remains reproducible
+False Recovery Rate	Cases where recovery appears successful but fails independent validation
+Recovery Time	Time from incident identification to verified recovery
+Manual Intervention	Human actions required during recovery
+AI Plan Accuracy	Correctness of recommended recovery actions
 Verification Coverage	Percentage of relevant security conditions tested
 
-⸻
-
-🏗️ Technology Stack
-
-<div align="center">
-
-Area	Technologies
-🛡️ Detection	Wazuh · Sysmon · Windows Event Logs · auditd
-🤖 AI	Python · LLM APIs · Pydantic
-⚙️ Automation	Python · PowerShell · Bash
-⚔️ Attack Simulation	Kali Linux · ATT&CK-inspired scenarios
-🖥️ Infrastructure	VMware · Windows · Linux · Docker
-🧪 Testing	pytest
-📦 Version Control	Git · GitHub
-
-</div>
+These metrics will be measured across multiple controlled attack scenarios.
 
 ⸻
 
-📁 Project Structure
+Experimental Scenarios
+
+The initial laboratory will focus on controlled scenarios such as:
+
+Credential Compromise
+        │
+        ├── Account Abuse
+        └── Credential Rotation
+Persistence
+        │
+        ├── Scheduled Task
+        └── Startup Persistence
+Privilege Escalation
+        │
+        └── Controlled Privilege Abuse
+Execution
+        │
+        └── Suspicious PowerShell
+Lateral Movement
+        │
+        └── Controlled Remote Access
+Ransomware Simulation
+        │
+        └── Non-destructive Recovery Validation
+
+All scenarios will run exclusively inside the isolated laboratory.
+
+⸻
+
+Technology Stack
+
+Layer	Technology
+Endpoint Monitoring	Sysmon, Windows Event Logs, auditd
+SIEM / XDR	Wazuh
+AI / Automation	Python, LLM API, Pydantic
+Recovery	Python, PowerShell, Bash
+Attack Simulation	Kali Linux
+Virtualization	VMware
+Testing	pytest
+Version Control	Git / GitHub
+Future UI	Web-based dashboard
+
+⸻
+
+Repository Structure
 
 AI-Cyber-Recovery-Assurance/
 │
@@ -442,106 +370,102 @@ AI-Cyber-Recovery-Assurance/
 
 ⸻
 
-🚀 Development Roadmap
+Development Roadmap
 
-[01] Repository & Development Environment
-       ↓
-[02] Isolated Security Lab
-       ↓
-[03] Wazuh + Endpoint Telemetry
-       ↓
-[04] Controlled Attack Scenarios
-       ↓
-[05] AI Investigation Engine
-       ↓
-[06] Recovery Planner
-       ↓
-[07] Recovery Orchestrator
-       ↓
-[08] Security Assurance Engine
-       ↓
-[09] Controlled Re-Attack
-       ↓
-[10] Recovery Proof
-       ↓
-[11] Experiments & Evaluation
-       ↓
-[12] Dashboard & Research Documentation
-
-⸻
-
-🔬 Research Question
-
-Can an AI-assisted incident recovery workflow be independently verified through security invariants and controlled re-attack validation to determine whether a compromised environment has actually recovered securely?
-
-Secondary Questions
-
-* Which security invariants are most important for recovery verification?
-* How often can an apparently successful recovery fail controlled re-attack validation?
-* Can independent verification reduce false recovery decisions?
-* How much recovery automation can safely be delegated to AI?
-* Where should human approval remain necessary?
+01  Repository & Development Environment
+        ↓
+02  Isolated Security Laboratory
+        ↓
+03  Endpoint Telemetry
+        ↓
+04  Wazuh Detection Pipeline
+        ↓
+05  Controlled Attack Scenarios
+        ↓
+06  AI Investigation Engine
+        ↓
+07  Recovery Planner
+        ↓
+08  Recovery Orchestrator
+        ↓
+09  Security Assurance Engine
+        ↓
+10  Controlled Re-Attack
+        ↓
+11  Recovery Proof
+        ↓
+12  Experimental Evaluation
+        ↓
+13  Dashboard & Research Documentation
 
 ⸻
 
-🔐 Safety
+Research Contribution
 
-This project is designed exclusively for an isolated cybersecurity research laboratory.
+This project does not claim that AI-assisted recovery, security verification, or adversarial validation individually originate here.
 
-All attack simulations are intended for controlled systems owned or explicitly authorized for testing.
+Instead, the project focuses on implementing and experimentally evaluating a specific integrated workflow:
 
-No real-world systems, accounts, credentials, or infrastructure should be targeted.
+AI Recovery
+     ↓
+Independent Security Assurance
+     ↓
+Controlled Re-Attack
+     ↓
+Recovery Proof
+
+The goal is to investigate whether this workflow can reduce the gap between:
+
+“the recovery procedure completed”
+
+and
+
+“the security failure was actually remediated.”
 
 ⸻
 
-📌 Current Status
+Current Status
+
+Phase 01 — Repository & Architecture
+
+Repository              ████████████████████  100%
+Architecture            ████████████████████  100%
+Lab Environment         ░░░░░░░░░░░░░░░░░░░░    0%
+Detection Pipeline      ░░░░░░░░░░░░░░░░░░░░    0%
+AI Investigation        ░░░░░░░░░░░░░░░░░░░░    0%
+Recovery Engine         ░░░░░░░░░░░░░░░░░░░░    0%
+Assurance Engine        ░░░░░░░░░░░░░░░░░░░░    0%
+Re-Attack Validation    ░░░░░░░░░░░░░░░░░░░░    0%
+Evaluation              ░░░░░░░░░░░░░░░░░░░░    0%
+
+Experimental results will be added only after implementation and controlled testing.
+
+⸻
+
+Safety & Scope
+
+This project is intended exclusively for authorized cybersecurity research and isolated laboratory environments.
+
+Attack simulations must be performed only against systems owned by the researcher or explicitly authorized for testing.
+
+No real-world infrastructure, credentials, accounts, or third-party systems are targeted.
+
+⸻
 
 <div align="center">
 
-🚧 UNDER DEVELOPMENT
+Recovery should not be trusted simply because it completed.
 
-Repository & Architecture Phase
-
-████░░░░░░░░░░░░░░░░ 20%
-
-</div>
-
-Implementation and experimental results will be added incrementally.
-
-⸻
-
-🗺️ Future Work
-
-Potential extensions include:
-
-* Multi-host recovery
-* Cloud recovery validation
-* Backup integrity verification
-* Automated rollback
-* Recovery dependency graphs
-* Human-in-the-loop approval
-* Additional attack scenarios
-* Adversarial testing of the recovery planner
-* Large-scale experimental evaluation
-
-⸻
-
-<div align="center">
-
-🛡️ Recovery is not the end of an incident.
-
-Proof of recovery is.
+It should be verified.
 
 <br>
 
-AI Cyber Recovery Assurance
-
-AI × SOC × Incident Response × Security Assurance × Adversarial Validation
+AI · SOC · Incident Response · Security Assurance · Adversarial Validation
 
 </div>
 
 ⸻
 
-📜 License
+License
 
-MIT License
+This project is licensed under the MIT License.
