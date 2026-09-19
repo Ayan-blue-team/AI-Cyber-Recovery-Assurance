@@ -1,0 +1,30 @@
+{
+  "incident_id": "INC-SCN1-001",
+  "status": "PROVEN",
+  "assurance_report": {
+    "incident_id": "INC-SCN1-001",
+    "invariant_results": [
+      {
+        "invariant": "compromised_account_disabled:user123",
+        "status": "PASS",
+        "evidence": {
+          "account": "user123",
+          "enabled": false
+        },
+        "checked_at": "2026-09-19T14:11:11.841435Z"
+      }
+    ],
+    "generated_at": "2026-09-19T14:11:11.841439Z"
+  },
+  "re_attack_result": {
+    "incident_id": "INC-SCN1-001",
+    "scenario": "credential_reuse_attempt",
+    "blocked": true,
+    "evidence": {
+      "simulated": true,
+      "note": "MockReAttackScenario pretended to replay 'credential_reuse_attempt'"
+    },
+    "executed_at": "2026-09-19T14:11:11.841457Z"
+  },
+  "rationale": "All invariants passed and the controlled re-attack ('credential_reuse_attempt') was blocked."
+}
