@@ -1,6 +1,7 @@
 <div align="center">
 
 # AI Cyber Recovery Assurance
+[![Tests](https://github.com/Ayan-blue-team/AI-Cyber-Recovery-Assurance/actions/workflows/tests.yml/badge.svg)](https://github.com/Ayan-blue-team/AI-Cyber-Recovery-Assurance/actions/workflows/tests.yml)
 
 **AI-Assisted Incident Recovery with Independent Security Verification and Controlled Re-Attack Validation**
 
