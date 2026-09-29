@@ -29,6 +29,8 @@
 - [Experimental Scenarios](#experimental-scenarios)
 - [Technology Stack](#technology-stack)
 - [Repository Structure](#repository-structure)
+- [Getting Started](#getting-started)
+- [Documentation](#documentation)
 - [Development Roadmap](#development-roadmap)
 - [Research Contribution](#research-contribution)
 - [Current Status](#current-status)
@@ -145,7 +147,7 @@ The final recovery state combines invariant verification and controlled re-attac
 
 `PROVEN` · `PARTIALLY PROVEN` · `FAILED` · `UNKNOWN`
 
-The exact decision logic will be defined and evaluated experimentally during implementation.
+The exact decision logic is implemented and unit-tested in `re_attack/validator.py`; see [`docs/methodology.md`](docs/methodology.md) for the full rule set.
 
 ---
 
@@ -159,7 +161,7 @@ flowchart TB
     B -->|Authorized Action| C["Recovery Executor<br/>PowerShell / Bash / Python / APIs"]
 ```
 
-This architecture prevents the language model from being treated as an unrestricted system administrator.
+This architecture prevents the language model from being treated as an unrestricted system administrator. In the current implementation, this boundary is enforced in code: the AI recovery planner (`ai_engine/recovery_planner.py`) never sets an action's risk or approval requirement itself — a deterministic policy table does, and any action type the model proposes that isn't recognized is forced into a fail-safe, human-approval-required state.
 
 ---
 
@@ -180,7 +182,7 @@ Security invariants represent conditions that should hold after recovery.
 | Vulnerability | Exploited weakness remediated |
 | Backup | Recovery source verified |
 
-The Assurance Engine evaluates these conditions **independently** from the AI's own conclusion.
+The Assurance Engine evaluates these conditions **independently** from the AI's own conclusion. Missing evidence is always reported as `UNKNOWN` — it is never treated as a passing result.
 
 ---
 
@@ -197,7 +199,7 @@ The Assurance Engine evaluates these conditions **independently** from the AI's 
 | AI Plan Accuracy | Correctness of recommended recovery actions |
 | Verification Coverage | Percentage of relevant security conditions tested |
 
-These metrics will be measured across multiple controlled attack scenarios.
+These metrics will be measured across multiple controlled attack scenarios once real lab integration (see [Current Status](#current-status)) is complete.
 
 ---
 
@@ -220,7 +222,7 @@ The initial laboratory will focus on controlled scenarios such as:
 - **Ransomware Simulation**
   - Non-destructive Recovery Validation
 
-All scenarios run exclusively inside the isolated laboratory.
+All scenarios run exclusively inside the isolated laboratory. See [`docs/threat_model.md`](docs/threat_model.md) for the assumed attacker capability and safety boundaries for each scenario.
 
 ---
 
@@ -246,6 +248,7 @@ All scenarios run exclusively inside the isolated laboratory.
 AI-Cyber-Recovery-Assurance/
 │
 ├── ai_engine/
+│   ├── schemas.py
 │   ├── investigation.py
 │   ├── recovery_planner.py
 │   └── prompts/
@@ -275,8 +278,8 @@ AI-Cyber-Recovery-Assurance/
 │   └── ransomware_simulation/
 │
 ├── experiments/
-│   ├── baseline/
 │   ├── results/
+│   ├── scenario_1_credential_compromise.py
 │   └── evaluation.py
 │
 ├── dashboard/
@@ -286,28 +289,76 @@ AI-Cyber-Recovery-Assurance/
 │   ├── threat_model.md
 │   └── research.md
 │
-└── tests/
+├── tests/
+│
+└── .github/workflows/tests.yml
 ```
+
+---
+
+## Getting Started
+
+The software pipeline (AI engine, orchestrator, assurance engine, re-attack
+decision logic) can be run and tested today, independently of the physical
+lab, using mocked LLM and evidence components.
+
+```bash
+git clone https://github.com/Ayan-blue-team/AI-Cyber-Recovery-Assurance.git
+cd AI-Cyber-Recovery-Assurance
+
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+
+pip install -r requirements.txt
+
+# Run the full test suite
+pytest -v
+
+# Run the end-to-end Scenario 1 demo (mocked components — see docs/methodology.md)
+python experiments/scenario_1_credential_compromise.py
+```
+
+A real `ANTHROPIC_API_KEY` is only required for live LLM calls; it is not
+needed to run the test suite or the mocked demo script above. Set it in a
+local `.env` file (never committed — see `.gitignore`) when working with
+real model calls.
+
+---
+
+## Documentation
+
+| Document | Contents |
+|---|---|
+| [`docs/methodology.md`](docs/methodology.md) | Research question, design principles, pipeline stages, Recovery Proof decision rules, implementation status |
+| [`docs/threat_model.md`](docs/threat_model.md) | Attacker profile per scenario, scope, safety controls, non-goals |
+| `docs/research.md` | Experimental results and baseline comparison (added once real lab evaluation begins) |
 
 ---
 
 ## Development Roadmap
 
-| # | Milestone |
-|---|---|
-| 01 | Repository & Development Environment |
-| 02 | Isolated Security Laboratory |
-| 03 | Endpoint Telemetry |
-| 04 | Wazuh Detection Pipeline |
-| 05 | Controlled Attack Scenarios |
-| 06 | AI Investigation Engine |
-| 07 | Recovery Planner |
-| 08 | Recovery Orchestrator |
-| 09 | Security Assurance Engine |
-| 10 | Controlled Re-Attack |
-| 11 | Recovery Proof |
-| 12 | Experimental Evaluation |
-| 13 | Dashboard & Research Documentation |
+| # | Milestone | Status |
+|---|---|---|
+| 01 | Repository & Development Environment | ✅ Done |
+| 02 | Isolated Security Laboratory (network, Windows target, Kali) | ✅ Done |
+| 03 | Endpoint Telemetry (Sysmon on Windows target) | ✅ Done |
+| 04 | Wazuh Detection Pipeline | 🔄 In progress |
+| 05 | Controlled Attack Scenarios (real, in-lab) | ⬜ Not started |
+| 06 | AI Investigation Engine | ✅ Implemented (mocked LLM, CI-tested) |
+| 07 | Recovery Planner | ✅ Implemented (mocked LLM, CI-tested) |
+| 08 | Recovery Orchestrator | ✅ Implemented (mock executor, CI-tested) |
+| 09 | Security Assurance Engine | ✅ Implemented (mock evidence, CI-tested) |
+| 10 | Controlled Re-Attack | ✅ Decision logic implemented (mock scenario, CI-tested) |
+| 11 | Recovery Proof | ✅ Implemented and unit-tested (5 explicit decision rules) |
+| 12 | Experimental Evaluation (real lab data) | ⬜ Not started |
+| 13 | Dashboard & Research Documentation | ⬜ Not started |
+
+**Note:** items 06–11 are complete at the *software* level — every stage
+runs end-to-end and is covered by automated tests — but still uses mocked
+LLM responses, mocked evidence, and a mocked re-attack outcome in place of
+the real lab (items 02–05). See [`docs/methodology.md`](docs/methodology.md#4-implementation-status)
+for the exact boundary between what has been tested in software and what
+has been validated against a real environment.
 
 ---
 
@@ -327,21 +378,39 @@ The goal is to investigate whether this workflow can reduce the gap between *"th
 
 ## Current Status
 
-**Phase 01 — Repository & Architecture**
+### Software Pipeline
+
+*(implemented, automated-tested via CI, currently using mocked LLM/evidence — see [Documentation](#documentation))*
 
 | Component | Progress |
 |---|---|
-| Repository | `████████████████████` 100% |
-| Architecture | `████████████████████` 100% |
-| Lab Environment | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| Detection Pipeline | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| AI Investigation | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| Recovery Engine | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| Assurance Engine | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| Re-Attack Validation | `░░░░░░░░░░░░░░░░░░░░` 0% |
-| Evaluation | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| Repository & CI | `████████████████████` 100% |
+| Data Contracts (`ai_engine/schemas.py`) | `████████████████████` 100% |
+| AI Investigation Engine | `████████████████████` 100% |
+| AI Recovery Planner | `████████████████████` 100% |
+| Recovery Orchestrator | `████████████████████` 100% |
+| Assurance Engine (5 invariants) | `████████████████████` 100% |
+| Re-Attack Decision Logic | `████████████████████` 100% |
+| End-to-End Integration (Scenario 1, mocked) | `████████████████████` 100% |
 
-Experimental results will be added only after implementation and controlled testing.
+### Lab & Real-World Integration
+
+| Component | Progress |
+|---|---|
+| Isolated Network (192.168.50.0/24) | `████████████████████` 100% |
+| Windows Target (WIN-01) | `████████████████████` 100% |
+| Kali Attacker | `████████████████████` 100% |
+| Endpoint Telemetry (Sysmon) | `████████████████████` 100% |
+| Wazuh Detection Pipeline | `████░░░░░░░░░░░░░░░░` 20% |
+| Real Attack Scenarios (in-lab) | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| Real AI Investigation (live LLM + telemetry) | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| Real Assurance (live evidence sources) | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| Real Controlled Re-Attack | `░░░░░░░░░░░░░░░░░░░░` 0% |
+| Experimental Evaluation & Baseline Comparison | `░░░░░░░░░░░░░░░░░░░░` 0% |
+
+No experimental result in this repository is reported as real unless it
+was produced by the actual lab environment. Results produced with mocked
+components are explicitly labeled `"simulated": true` in code and output.
 
 ---
 
