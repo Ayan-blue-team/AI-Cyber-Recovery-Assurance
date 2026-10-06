@@ -1,0 +1,47 @@
+{
+  "incident_id": "INC-SCN1-REAL-001",
+  "status": "PROVEN",
+  "assurance_report": {
+    "incident_id": "INC-SCN1-REAL-001",
+    "invariant_results": [
+      {
+        "invariant": "compromised_account_disabled:user123",
+        "status": "PASS",
+        "evidence": {
+          "account": "user123",
+          "enabled": false
+        },
+        "checked_at": "2026-10-06T11:51:35.703364Z"
+      }
+    ],
+    "generated_at": "2026-10-06T11:51:35.703392Z"
+  },
+  "re_attack_result": {
+    "incident_id": "INC-SCN1-REAL-001",
+    "scenario": "credential_reuse_attempt_smb",
+    "blocked": true,
+    "evidence": {
+      "simulated": false,
+      "source": "wazuh_discover",
+      "detection_event_success": {
+        "event_id": 4624,
+        "timestamp": "2026-10-06T15:14:12",
+        "data.srcip": "192.168.50.10",
+        "data.account_name": "user123",
+        "data.logon_type": 3,
+        "rule.description": "Windows Logon Success"
+      },
+      "detection_event_failure": {
+        "event_id": 4625,
+        "timestamp": "2026-10-06T15:47:51",
+        "data.srcip": "192.168.50.10",
+        "data.account_name": "user123",
+        "rule.description": "Windows Logon Failure - Unknown user or bad password"
+      },
+      "attack_tool": "netexec (nxc) smb",
+      "target": "WIN-01 (192.168.50.20)"
+    },
+    "executed_at": "2026-10-06T11:51:35.703402Z"
+  },
+  "rationale": "All invariants passed and the controlled re-attack ('credential_reuse_attempt_smb') was blocked."
+}
