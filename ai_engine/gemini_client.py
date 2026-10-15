@@ -9,10 +9,15 @@ purchase. Google's Gemini API (via Google AI Studio) offers a free tier
 that does not require a credit card, which is useful for people who want
 to run this project's AI stages without any upfront payment.
 
-Requires: pip install google-generativeai
-Get a free key at: https://aistudio.google.com/ (no credit card required
-for the free tier, as of this writing — verify current terms on sign-up,
-since free-tier policies can change).
+Requires: pip install google-genai
+(NOT google-generativeai — that package is deprecated as of 2026 and no
+longer receives updates; this file uses the current, supported SDK.)
+
+Get a free key at: https://aistudio.google.com/apikey (no credit card
+required for the free tier, as of this writing — verify current terms on
+sign-up, since free-tier policies and model availability can change;
+Gemini 2.5 models are scheduled for shutdown in October 2026, which is why
+this client defaults to a Gemini 3 model instead).
 """
 
 from __future__ import annotations
@@ -27,23 +32,24 @@ class GeminiLLMClient:
     project calls an LLMClient.
     """
 
-    def __init__(self, model: str = "gemini-1.5-flash", api_key: Optional[str] = None):
-        import google.generativeai as genai  # local import, same pattern as AnthropicLLMClient
+    def __init__(self, model: str = "gemini-3-flash-preview", api_key: Optional[str] = None):
+        from google import genai  # local import, same pattern as AnthropicLLMClient
 
         key = api_key or os.environ.get("GEMINI_API_KEY")
         if not key:
             raise RuntimeError(
                 "No Gemini API key found. Set the GEMINI_API_KEY environment "
-                "variable, or get a free key at https://aistudio.google.com/"
+                "variable, or get a free key at https://aistudio.google.com/apikey"
             )
-        genai.configure(api_key=key)
-        self._model = genai.GenerativeModel(model_name=model)
+        self._client = genai.Client(api_key=key)
+        self._model = model
 
     def complete(self, system: str, user: str) -> str:
-        # Gemini's SDK takes the system instruction separately from the
-        # generative model constructor in some versions; passing it as a
-        # prefixed user turn here keeps this compatible across SDK versions
-        # without depending on a specific one.
-        prompt = f"{system}\n\n{user}"
-        response = self._model.generate_content(prompt)
+        from google.genai import types
+
+        response = self._client.models.generate_content(
+            model=self._model,
+            contents=user,
+            config=types.GenerateContentConfig(system_instruction=system),
+        )
         return response.text
