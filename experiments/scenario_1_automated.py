@@ -66,6 +66,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ai_engine.investigation import AnthropicLLMClient, investigate
+from ai_engine.gemini_client import GeminiLLMClient
 from ai_engine.recovery_planner import plan_recovery
 from ai_engine.schemas import Incident, Severity
 from assurance.connectors.winrm_evidence import WinRMEvidenceProvider
@@ -105,14 +106,22 @@ def main() -> None:
     kali_host = require_env("KALI_HOST")
     kali_user = require_env("KALI_USER")
     kali_password = require_env("KALI_PASSWORD")
-    require_env("ANTHROPIC_API_KEY")  # consumed implicitly by AnthropicLLMClient
+    # Pick which LLM provider to use. Default is Anthropic (paid, $5 min
+    # top-up); set LLM_PROVIDER=gemini to use Google's free-tier API
+    # instead (see ai_engine/gemini_client.py for setup).
+    provider = os.environ.get("LLM_PROVIDER", "anthropic").lower()
+    if provider == "gemini":
+        require_env("GEMINI_API_KEY")
+        llm_client = GeminiLLMClient()
+    else:
+        require_env("ANTHROPIC_API_KEY")  # consumed implicitly by AnthropicLLMClient
+        llm_client = AnthropicLLMClient()
 
     incident = build_incident(win01_host)
     print("=== 1. Incident ===")
     print(incident.model_dump_json(indent=2))
 
     # --- 2. AI Investigation (real LLM call) -------------------------------
-    llm_client = AnthropicLLMClient()
     investigation = investigate(
         incident,
         telemetry={
