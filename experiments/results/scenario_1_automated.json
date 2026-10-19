@@ -1,0 +1,32 @@
+{
+  "incident_id": "INC-SCN1-AUTO-001",
+  "status": "PROVEN",
+  "assurance_report": {
+    "incident_id": "INC-SCN1-AUTO-001",
+    "invariant_results": [
+      {
+        "invariant": "compromised_account_disabled:user123",
+        "status": "PASS",
+        "evidence": {
+          "account": "user123",
+          "enabled": false
+        },
+        "checked_at": "2026-10-19T05:17:52.863069Z"
+      }
+    ],
+    "generated_at": "2026-10-19T05:17:52.863103Z"
+  },
+  "re_attack_result": {
+    "incident_id": "INC-SCN1-AUTO-001",
+    "scenario": "credential_reuse_attempt_smb",
+    "blocked": true,
+    "evidence": {
+      "simulated": false,
+      "command": "nxc smb 192.168.50.20 -u user123 -p 'Passw0rd123!'",
+      "raw_output": "[*] First time use detected\n[*] Creating home directory structure\n[*] Creating missing folder logs\n[*] Creating missing folder modules\n[*] Creating missing folder workspaces\n[*] Creating missing folder obfuscated_scripts\n[*] Creating missing folder screenshots\n[*] Creating missing folder logs/sam\n[*] Creating missing folder logs/lsa\n[*] Creating missing folder logs/ntds\n[*] Creating missing folder logs/dpapi\n[*] Creating default workspace\n[*] Initializing WINRM protocol database\n[*] Initializing SMB protocol database\n[*] Initializing VNC protocol database\n[*] Initializing NFS protocol database\n[*] Initializing FTP protocol database\n[*] Initializing MSSQL protocol database\n[*] Initializing RDP protocol database\n[*] Initializing SSH protocol database\n[*] Initializing LDAP protocol database\n[*] Initializing WMI protocol database\n[*] Copying default configuration file\nSMB                      192.168.50.20   445    WIN-4CDQCTCG1DR  [*] Windows Server 2022 Build 20348 x64 (name:WIN-4CDQCTCG1DR) (domain:WIN-4CDQCTCG1DR) (signing:False) (SMBv1:None)\nSMB                      192.168.50.20   445    WIN-4CDQCTCG1DR  [-] WIN-4CDQCTCG1DR\\user123:Passw0rd123! STATUS_LOGON_FAILURE",
+      "target": "192.168.50.20"
+    },
+    "executed_at": "2026-10-19T05:17:56.336661Z"
+  },
+  "rationale": "All invariants passed and the controlled re-attack ('credential_reuse_attempt_smb') was blocked."
+}
