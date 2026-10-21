@@ -1,0 +1,43 @@
+# Scenario 2 — Persistence (Scheduled Task)
+#
+# Setup (run manually before this scenario, on WIN-01, see
+# docs/threat_model.md's Persistence attacker profile):
+#   schtasks /create /tn "EvilTask" /tr "powershell.exe -NoProfile -Command Write-Output pwned" /sc onlogon /ru SYSTEM
+#
+# This simulates an attacker who has already achieved local code execution
+# and created a scheduled task as a persistence mechanism.
+
+name: scenario_2_persistence
+description: >
+  A scheduled task named 'EvilTask' was created on WIN-01 as a persistence
+  mechanism following local code execution. Tests whether removing the
+  task actually prevents it from being re-registered/re-run, rather than
+  just disappearing from one listing.
+
+incident:
+  incident_id: INC-SCN2-YAML-001
+  severity: high
+  host: "${WIN01_HOST}"
+  alert: "Suspicious scheduled task 'EvilTask' created, runs PowerShell on every logon"
+  telemetry_note: >
+    Sysmon Event ID 1 (Process Create) shows schtasks.exe creating a task
+    named 'EvilTask' configured to run powershell.exe at every logon,
+    running as SYSTEM.
+
+assurance:
+  - name: ScheduledTaskAbsentInvariant
+    params:
+      host: WIN-01
+      task_name: EvilTask
+
+re_attack:
+  scenario_name: persistence_task_rerun_attempt
+  executor: winrm
+  host_ref: win01
+  command: "schtasks /run /tn \"EvilTask\""
+  success_markers:
+    - "SUCCESS: Attempted to run the scheduled task"
+  failure_markers:
+    - "ERROR:"
+    - "cannot find the file specified"
+    - "cannot find the task"
