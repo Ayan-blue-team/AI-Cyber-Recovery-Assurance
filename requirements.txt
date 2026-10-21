@@ -3,3 +3,4 @@ anthropic>=0.34,<1
 pytest>=7.4,<9
 pywinrm>=0.4,<1
 paramiko>=4,<6
+pyyaml>=6,<7
