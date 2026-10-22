@@ -68,9 +68,27 @@ Rules:
   remove_persistence, restore_firewall_configuration, isolate_endpoint,
   remove_unauthorized_account, restore_security_agent, patch_vulnerability,
   remove_malicious_artifact, restore_verified_backup.
-- "target" must reference an asset, user, or host that actually appears in
-  the investigation result (affected_assets, or the incident's user/host).
-  Do not invent targets that were not mentioned.
+- "target" must be the MOST SPECIFIC identifier the action actually needs,
+  and it must come from something explicitly mentioned in the investigation
+  result or incident (findings, root_cause, affected_assets, user, host,
+  or alert text) — never invented.
+  * For disable_account / rotate_credentials / remove_unauthorized_account:
+    target is the account name (e.g. "user123").
+  * For terminate_process: target is the process name (e.g. "powershell.exe"),
+    not a host.
+  * For remove_scheduled_task: target is the scheduled task's NAME (e.g.
+    "EvilTask"), not a host or IP address. Look for the task name in the
+    findings or alert text.
+  * For remove_persistence / remove_malicious_artifact: target is the
+    specific artifact name/path if one is mentioned; only fall back to the
+    host if no more specific artifact name was mentioned anywhere.
+  * For isolate_endpoint / restore_firewall_configuration /
+    restore_security_agent / patch_vulnerability / restore_verified_backup:
+    target is the host, since these apply to the whole endpoint.
+  Using the host as target for an action that needs a specific artifact
+  name (like remove_scheduled_task) is WRONG even if the host is the only
+  thing in affected_assets — look at findings/alert text for the specific
+  name instead.
 - "reason" should briefly cite the finding or root cause that justifies
   the action.
 - Do not include risk levels or approval flags — those are assigned by a
