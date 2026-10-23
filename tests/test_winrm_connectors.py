@@ -137,6 +137,44 @@ class TestWinRMActionExecutor:
             executor.execute(action)
 
     @patch("recovery.executors.winrm_executor.winrm.Session")
+    def test_terminate_process_strips_exe_suffix(self, mock_session_cls):
+        # Regression test: Stop-Process -Name expects the bare process name
+        # ("powershell"), not "powershell.exe" — found when the AI planner
+        # correctly named "powershell.exe" per its own instructions, but
+        # the command silently failed because of this exact mismatch.
+        executor = self._make_executor(mock_session_cls)
+        executor._session.run_ps.return_value = make_result(std_out=b"")
+
+        action = RecoveryAction(
+            action="terminate_process",
+            target="powershell.exe",
+            reason="test",
+            risk=RiskLevel.LOW,
+            requires_approval=False,
+        )
+        executor.execute(action)
+
+        called_command = executor._session.run_ps.call_args[0][0]
+        assert "Stop-Process -Name 'powershell'" in called_command
+        assert "powershell.exe" not in called_command.split("Stop-Process")[1]
+
+    @patch("recovery.executors.winrm_executor.winrm.Session")
+    def test_every_command_suppresses_progress_stream(self, mock_session_cls):
+        # Regression test: PowerShell's progress stream ("Preparing modules
+        # for first use") was previously captured as stderr noise and
+        # mistaken for a real command failure.
+        executor = self._make_executor(mock_session_cls)
+        executor._session.run_ps.return_value = make_result(std_out=b"")
+
+        action = RecoveryAction(
+            action="disable_account", target="user123", reason="t", risk=RiskLevel.MEDIUM
+        )
+        executor.execute(action)
+
+        called_command = executor._session.run_ps.call_args[0][0]
+        assert called_command.startswith("$ProgressPreference = 'SilentlyContinue'; ")
+
+    @patch("recovery.executors.winrm_executor.winrm.Session")
     def test_rollback_only_supported_for_disable_account(self, mock_session_cls):
         executor = self._make_executor(mock_session_cls)
 
