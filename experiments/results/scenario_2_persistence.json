@@ -1,0 +1,34 @@
+{
+  "incident_id": "INC-SCN2-YAML-001",
+  "status": "PROVEN",
+  "assurance_report": {
+    "incident_id": "INC-SCN2-YAML-001",
+    "invariant_results": [
+      {
+        "invariant": "malicious_scheduled_task_absent:WIN-01:EvilTask",
+        "status": "PASS",
+        "evidence": {
+          "host": "WIN-01",
+          "task_name": "EvilTask",
+          "present": false
+        },
+        "checked_at": "2026-10-22T10:29:09.203401Z"
+      }
+    ],
+    "generated_at": "2026-10-22T10:29:09.203420Z"
+  },
+  "re_attack_result": {
+    "incident_id": "INC-SCN2-YAML-001",
+    "scenario": "persistence_task_rerun_attempt",
+    "blocked": true,
+    "evidence": {
+      "simulated": false,
+      "executor": "winrm",
+      "command": "schtasks /run /tn \"EvilTask\"",
+      "raw_output": "ERROR: The system cannot find the file specified.",
+      "target": "192.168.50.20"
+    },
+    "executed_at": "2026-10-22T10:29:09.568955Z"
+  },
+  "rationale": "All invariants passed and the controlled re-attack ('persistence_task_rerun_attempt') was blocked."
+}
