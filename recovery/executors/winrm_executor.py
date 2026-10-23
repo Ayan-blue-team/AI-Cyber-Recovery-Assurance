@@ -46,9 +46,15 @@ def _rotate_credentials_cmd(target: str) -> str:
 
 
 def _terminate_process_cmd(target: str) -> str:
-    # `target` expected to be a process name (e.g. "powershell"), not a PID,
-    # to stay stable across repeated runs.
-    return f"Stop-Process -Name '{target}' -Force -ErrorAction SilentlyContinue"
+    # `target` expected to be a process name (e.g. "powershell" or
+    # "powershell.exe"), not a PID, to stay stable across repeated runs.
+    # Stop-Process -Name expects the BARE name (no ".exe"), so strip it
+    # here rather than relying on the AI to always omit it — the planner's
+    # prompt asks for a process name, and "powershell.exe" is still a
+    # correct, specific answer to that; this executor is the one place
+    # that should know Stop-Process's own syntax quirk.
+    bare_name = target[:-4] if target.lower().endswith(".exe") else target
+    return f"Stop-Process -Name '{bare_name}' -Force -ErrorAction SilentlyContinue"
 
 
 def _remove_scheduled_task_cmd(target: str) -> str:
@@ -89,7 +95,11 @@ class WinRMActionExecutor:
                 f"Refusing to guess a command — add one to ACTION_COMMANDS first."
             )
 
-        command = command_builder(action.target)
+        # Suppress PowerShell's progress stream (e.g. "Preparing modules for
+        # first use") so it never ends up mixed into std_err and mistaken
+        # for a real command failure — this caused exactly that confusion
+        # for terminate_process before this fix.
+        command = "$ProgressPreference = 'SilentlyContinue'; " + command_builder(action.target)
         try:
             result = self._session.run_ps(command)
         except Exception as exc:
