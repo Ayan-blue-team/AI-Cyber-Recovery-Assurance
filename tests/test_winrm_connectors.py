@@ -155,8 +155,8 @@ class TestWinRMActionExecutor:
         executor.execute(action)
 
         called_command = executor._session.run_ps.call_args[0][0]
-        assert "Stop-Process -Name 'powershell'" in called_command
-        assert "powershell.exe" not in called_command.split("Stop-Process")[1]
+        assert "Get-Process -Name 'powershell'" in called_command
+        assert "powershell.exe" not in called_command.split("Stop-Process")[0]
 
     @patch("recovery.executors.winrm_executor.winrm.Session")
     def test_every_command_suppresses_progress_stream(self, mock_session_cls):
@@ -173,6 +173,30 @@ class TestWinRMActionExecutor:
 
         called_command = executor._session.run_ps.call_args[0][0]
         assert called_command.startswith("$ProgressPreference = 'SilentlyContinue'; ")
+
+    @patch("recovery.executors.winrm_executor.winrm.Session")
+    def test_terminate_process_excludes_own_pid(self, mock_session_cls):
+        # Regression test: a bare `Stop-Process -Name powershell` can kill
+        # the process executing the termination command itself, since
+        # WinRM runs each command inside a fresh powershell.exe process.
+        # Found during Scenario 3 testing (the command self-terminated,
+        # exit code -1, target process left running).
+        executor = self._make_executor(mock_session_cls)
+        executor._session.run_ps.return_value = make_result(std_out=b"")
+
+        action = RecoveryAction(
+            action="terminate_process",
+            target="powershell.exe",
+            reason="test",
+            risk=RiskLevel.LOW,
+            requires_approval=False,
+        )
+        executor.execute(action)
+
+        called_command = executor._session.run_ps.call_args[0][0]
+        assert "Get-Process -Name 'powershell'" in called_command
+        assert "$_.Id -ne $PID" in called_command
+        assert "Stop-Process -Force" in called_command
 
     @patch("recovery.executors.winrm_executor.winrm.Session")
     def test_rollback_only_supported_for_disable_account(self, mock_session_cls):
