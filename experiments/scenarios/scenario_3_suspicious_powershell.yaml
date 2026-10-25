@@ -1,0 +1,58 @@
+# Scenario 3 — Suspicious PowerShell Execution
+#
+# Setup (run manually before this scenario, on WIN-01):
+#   Simulate a suspicious long-running encoded PowerShell process (the
+#   "already executing" malicious process this scenario's incident
+#   describes):
+#
+#     $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes('while($true){Start-Sleep -Seconds 5}'))
+#     Start-Process powershell.exe -ArgumentList "-NoProfile -WindowStyle Hidden -EncodedCommand $enc"
+#
+# NOTE ON EXPECTED RESULT: this scenario's recovery action (terminate_process)
+# only stops the currently running process — it does not prevent the same
+# encoded command from being executed again. The assurance invariant
+# (ProcessTerminatedInvariant) is therefore expected to PASS, while the
+# re-attack (re-running the same command) is expected to succeed, i.e.
+# blocked=False — producing a FAILED RecoveryProof. This is an intentional,
+# real demonstration of the project's central thesis: killing a process is
+# not the same as closing the execution path that spawned it.
+
+name: scenario_3_suspicious_powershell
+description: >
+  A long-running PowerShell process launched via an encoded (base64)
+  command is running on WIN-01, matching a known suspicious-execution
+  pattern. Tests whether terminating the process also prevents the same
+  encoded command from being re-executed.
+
+incident:
+  incident_id: INC-SCN3-YAML-001
+  severity: high
+  host: "${WIN01_HOST}"
+  alert: "Suspicious hidden PowerShell process running an encoded command detected"
+  telemetry_note: >
+    Sysmon Event ID 1 (Process Create) shows powershell.exe launched with
+    -WindowStyle Hidden and -EncodedCommand, matching a common
+    living-off-the-land execution pattern. The process has been running
+    continuously since detection.
+
+assurance:
+  - name: ProcessTerminatedInvariant
+    params:
+      host: WIN-01
+      process_identifier: powershell
+
+re_attack:
+  scenario_name: powershell_reexecution_attempt
+  executor: winrm
+  host_ref: win01
+  command: >
+    $ProgressPreference = 'SilentlyContinue';
+    $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes('Write-Output "REEXEC_OK"'));
+    powershell.exe -NoProfile -EncodedCommand $enc
+  success_markers:
+    - "REEXEC_OK"
+  failure_markers:
+    - "is not recognized"
+    - "UnauthorizedAccess"
+    - "cannot be loaded"
+    - "blocked"
