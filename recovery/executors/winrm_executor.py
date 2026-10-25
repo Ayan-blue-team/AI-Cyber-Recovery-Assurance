@@ -53,8 +53,23 @@ def _terminate_process_cmd(target: str) -> str:
     # prompt asks for a process name, and "powershell.exe" is still a
     # correct, specific answer to that; this executor is the one place
     # that should know Stop-Process's own syntax quirk.
+    #
+    # CRITICAL SAFETY FIX: every command this executor runs is itself
+    # executed inside a freshly spawned process of the SAME name when the
+    # target is an interpreter like "powershell" (WinRM runs each `run_ps`
+    # call as a new powershell.exe). A naive `Stop-Process -Name
+    # powershell` therefore risks killing the very process carrying out
+    # the termination, before it can report success — this is exactly
+    # what happened during Scenario 3 testing (exit code -1, process
+    # still running afterward). We exclude the current process's own PID
+    # ($PID, a PowerShell automatic variable) so the executor can never
+    # kill itself, regardless of which process name is targeted.
     bare_name = target[:-4] if target.lower().endswith(".exe") else target
-    return f"Stop-Process -Name '{bare_name}' -Force -ErrorAction SilentlyContinue"
+    return (
+        f"Get-Process -Name '{bare_name}' -ErrorAction SilentlyContinue "
+        f"| Where-Object {{ $_.Id -ne $PID }} "
+        f"| Stop-Process -Force -ErrorAction SilentlyContinue"
+    )
 
 
 def _remove_scheduled_task_cmd(target: str) -> str:
